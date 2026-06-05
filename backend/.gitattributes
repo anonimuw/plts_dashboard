@@ -1,0 +1,6 @@
+# Normalisasi line ending untuk source
+* text=auto
+
+# File biner model — simpan apa adanya (kecil, TIDAK pakai Git LFS)
+*.npz binary
+*.pkl binary

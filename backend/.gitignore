@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.env
+predictions.db
+*.log
+.DS_Store
+
+# Secrets
+token.txt
+*.token
+hf_token*
