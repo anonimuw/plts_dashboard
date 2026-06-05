@@ -6,6 +6,14 @@ Prediksi output daya menggunakan model **LSTM** yang dilatih dengan data cuaca h
 
 > Skripsi / Tugas Akhir — Pembangkit Listrik Tenaga Surya (PLTS) off-grid 400Wp.
 
+## Dokumentasi
+
+| Dokumen | Isi |
+|---|---|
+| [`BACKEND.md`](./BACKEND.md) | Penjelasan lengkap backend: API, model LSTM, fisika PLTS, data cuaca, caching |
+| [`FRONTEND.md`](./FRONTEND.md) | Penjelasan lengkap frontend: routing, SWR, komponen, chart, peta, deploy |
+| [`MAINTENANCE.md`](./MAINTENANCE.md) | Checklist troubleshooting (lokal & production) |
+
 ---
 
 ## Arsitektur
