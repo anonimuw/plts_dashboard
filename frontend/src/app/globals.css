@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+body {
+  @apply bg-slate-950 text-slate-100 antialiased;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+.light body {
+  @apply bg-slate-50 text-slate-900;
+}
+
+.light .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light .border-white\/5 {
+  border-color: rgba(0, 0, 0, 0.05);
+}
+
+.light .bg-white\/5 {
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.light .bg-slate-900\/50 {
+  background-color: rgba(248, 250, 252, 0.9);
+}
+
+.light .text-white {
+  color: #0f172a;
+}
+
+.light .text-slate-300 {
+  color: #475569;
+}
+
+.light .text-slate-400 {
+  color: #64748b;
+}
+
+.light .text-slate-500 {
+  color: #64748b;
+}
+
+/* Recharts tooltip fix for dark mode */
+.recharts-default-tooltip {
+  border-radius: 12px !important;
+}
+
+/* Leaflet overrides */
+.leaflet-container {
+  background: #1e293b;
+  font-family: inherit;
+}
+
+.light .leaflet-container {
+  background: #f1f5f9;
+}
+
+.leaflet-popup-content-wrapper {
+  @apply rounded-xl border border-white/10 bg-slate-800 text-slate-200 shadow-lg;
+}
+
+.light .leaflet-popup-content-wrapper {
+  @apply border-slate-200 bg-white text-slate-800;
+}
+
+.leaflet-popup-tip {
+  background: #1e293b;
+}
+
+.light .leaflet-popup-tip {
+  background: #ffffff;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-slate-700;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-600;
+}

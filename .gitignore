@@ -1,0 +1,36 @@
+# --- Node / Next.js (frontend) ---
+node_modules/
+.next/
+out/
+build/
+.vercel/
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Python (backend) ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# --- Runtime data ---
+predictions.db
+*.sqlite
+*.sqlite3
+
+# --- Environment / secrets ---
+.env
+.env.*
+!.env.example
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
