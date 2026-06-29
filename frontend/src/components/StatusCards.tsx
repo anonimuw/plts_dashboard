@@ -123,7 +123,7 @@ export default function StatusCards({ data, daily, isLoading }: Props) {
             <div>
               <div className="text-[10px] font-semibold uppercase text-slate-500">Metode</div>
               <div className="text-sm font-bold text-white">
-                {daily.method === 'lstm' ? 'Hybrid (LSTM + Fisika)' : 'Physics Fallback'}
+                {daily.method === 'lstm' ? 'Pure LSTM (Seq-to-One)' : 'Physics Fallback'}
               </div>
             </div>
           </div>

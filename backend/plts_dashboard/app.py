@@ -1,5 +1,5 @@
 """
-Flask API server untuk PLTS Dashboard.
+Flask API server untuk PLTS Dashboard (PURE LSTM, tanpa blend/forecast API).
 Endpoint: /api/status, /api/forecast/daily, /api/forecast/weekly, /api/history
 """
 
@@ -20,7 +20,7 @@ CORS(app)
 
 print("[app] Initializing model and scaler...")
 forecast.init()
-print("[app] Ready.")
+print("[app] Ready (pure LSTM seq-to-one autoregresif, persistence).")
 
 
 @app.route('/api/status')
@@ -63,8 +63,7 @@ def api_forecast_daily():
         return jsonify(forecast.forecast_daily())
     except Exception as e:
         print(f"[api/forecast/daily] Error: {e}")
-        fc = data_fetcher.get_forecast_hours(days=2)
-        return jsonify(forecast.physics_fallback_daily(fc or []))
+        return jsonify(forecast.physics_fallback_daily([]))
 
 
 @app.route('/api/forecast/weekly')

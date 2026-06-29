@@ -19,10 +19,10 @@ export const MODEL_METRICS = {
   architecture: '2 Layer LSTM (64→32)',
   inputShape: '(24, 8)',
   features: '8 fitur',
-  r2: 0.9617,
-  rmse: 14.21,
-  mae: 6.86,
-  mape: 33.11,
+  r2: 0.9621,
+  rmse: 14.32,
+  mae: 6.89,
+  mape: 28.96,
 } as const;
 
 export const WEATHER_ICONS: Record<string, string> = {

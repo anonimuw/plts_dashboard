@@ -34,14 +34,14 @@ const FEATURES = [
     title: 'Forecast Harian',
     color: 'text-emerald-400',
     description:
-      'Prediksi output daya PLTS untuk 24 jam ke depan dengan granularitas per jam. Menggunakan pendekatan hybrid blend: 50% prediksi LSTM + 50% kalkulasi fisika untuk meningkatkan robustness pada kondisi ekstrem. Ditampilkan sebagai line chart dengan confidence band (±MAPE). Prediksi malam hari (GHI < 10 W/m²) otomatis di-set ke 0.',
+      'Prediksi output daya PLTS untuk 24 jam ke depan dengan granularitas per jam. Menggunakan prediksi murni model LSTM secara seq-to-one autoregresif: hasil prediksi tiap jam di-feedback untuk memprediksi jam berikutnya, tanpa bergantung pada prakiraan cuaca eksternal. Ditampilkan sebagai line chart dengan confidence band (±MAPE). Prediksi malam hari (GHI < 10 W/m²) otomatis di-set ke 0.',
   },
   {
     icon: CalendarDays,
     title: 'Forecast Mingguan',
     color: 'text-purple-400',
     description:
-      'Prediksi total energi harian (Wh) untuk 7 hari ke depan. Sistem menghitung 168 jam prediksi per-jam lalu mengagregasi per hari. Ditampilkan sebagai bar chart dengan ikon cuaca (cerah/berawan/hujan) dari prakiraan Open-Meteo dan confidence interval yang melebar untuk hari ke-5 sampai ke-7.',
+      'Prediksi total energi harian (Wh) untuk 7 hari ke depan. Sistem menghitung 168 jam prediksi per-jam secara autoregresif lalu mengagregasi per hari. Ditampilkan sebagai bar chart dengan ikon cuaca (cerah/berawan/hujan) dan confidence interval yang melebar untuk hari ke-5 sampai ke-7.',
   },
   {
     icon: Clock,
@@ -76,7 +76,7 @@ const HOW_IT_WORKS = [
     icon: TrendingUp,
     step: '3',
     title: 'Prediksi LSTM',
-    description: 'Model LSTM menerima window 24 jam (24×8 fitur) yang sudah dinormalisasi, lalu memprediksi P_out jam berikutnya. Hasil di-blend dengan kalkulasi fisika.',
+    description: 'Model LSTM menerima window 24 jam (24×8 fitur) yang sudah dinormalisasi, lalu memprediksi P_out jam berikutnya. Prediksi di-feedback secara autoregresif (seq-to-one) untuk memprediksi jam-jam selanjutnya.',
   },
   {
     icon: Zap,
@@ -106,8 +106,8 @@ export default function About() {
           <p className="text-sm leading-relaxed text-slate-300">
             PLTS Dashboard adalah web application untuk monitoring dan forecasting output daya
             sistem Pembangkit Listrik Tenaga Surya (PLTS) off-grid 400Wp yang berlokasi di Pujon,
-            Kabupaten Malang, Jawa Timur. Dashboard ini menggabungkan model deep learning{' '}
-            <span className="font-semibold text-amber-400">LSTM</span> dengan kalkulasi fisika
+            Kabupaten Malang, Jawa Timur. Dashboard ini menggunakan model deep learning{' '}
+            <span className="font-semibold text-amber-400">LSTM</span> seq-to-one autoregresif
             untuk menghasilkan prediksi output daya yang akurat, dan menampilkannya dalam
             visualisasi interaktif yang terinspirasi dari Global Solar Atlas.
           </p>

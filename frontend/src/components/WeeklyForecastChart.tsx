@@ -234,7 +234,7 @@ export default function WeeklyForecastChart({ data, isLoading }: Props) {
                     : 'bg-red-400/15 text-red-400'
                 }`}
               >
-                {data.method === 'lstm' ? 'Hybrid 50/50' : 'Fallback'}
+                {data.method === 'lstm' ? 'Pure LSTM' : 'Fallback'}
               </span>
             )}
           </div>
