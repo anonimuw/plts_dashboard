@@ -30,17 +30,17 @@ COPY plts_dashboard/app.py \
 
 WORKDIR /app/plts_dashboard
 
-# HF Spaces default port
+# Port: pakai $PORT bila di-inject platform (Render/Railway), fallback 7860 (HF)
 EXPOSE 7860
 
 # 1 worker karena model TF di-load sekali ke memory
 # timeout 120s karena weekly forecast (168 step auto-regressive) bisa makan waktu
-# preload supaya model di-load saat startup, bukan per worker
-CMD ["gunicorn", \
-     "--bind", "0.0.0.0:7860", \
-     "--workers", "1", \
-     "--threads", "1", \
-     "--timeout", "120", \
-     "--access-logfile", "-", \
-     "--error-logfile", "-", \
-     "app:app"]
+# shell-form supaya ${PORT} ter-expand (Render meng-inject PORT saat runtime)
+CMD gunicorn \
+    --bind 0.0.0.0:${PORT:-7860} \
+    --workers 1 \
+    --threads 1 \
+    --timeout 120 \
+    --access-logfile - \
+    --error-logfile - \
+    app:app
