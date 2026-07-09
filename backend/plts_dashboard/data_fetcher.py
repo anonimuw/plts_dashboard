@@ -3,9 +3,11 @@ Wrapper Open-Meteo API dengan TTL cache.
 Dua endpoint: archive (historis) dan forecast (prakiraan).
 """
 
+import os
 import time
 import hashlib
 import json
+import tempfile
 import requests
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -19,7 +21,21 @@ HOURLY_PARAMS = 'shortwave_radiation,temperature_2m,relative_humidity_2m,wind_sp
 ARCHIVE_URL = 'https://archive-api.open-meteo.com/v1/archive'
 FORECAST_URL = 'https://api.open-meteo.com/v1/forecast'
 
+# --- Cache 2 tingkat: memori (proses) + disk (bertahan lintas restart worker) ---
 _cache: dict[str, tuple[float, dict]] = {}
+_CACHE_DIR = os.environ.get(
+    'OM_CACHE_DIR', os.path.join(tempfile.gettempdir(), 'plts_om_cache')
+)
+os.makedirs(_CACHE_DIR, exist_ok=True)
+
+# Throttle global: jarak minimum antar panggilan jaringan ke Open-Meteo,
+# supaya beberapa endpoint yang dipanggil hampir bersamaan tidak "membanjiri" API.
+_MIN_INTERVAL = 1.0
+_last_call_ts = 0.0
+
+# Satu Session dipakai ulang (keep-alive + User-Agent yang jelas).
+_session = requests.Session()
+_session.headers.update({'User-Agent': 'plts-dashboard/1.0 (skripsi PLTS off-grid)'})
 
 
 def _cache_key(url: str, params: dict) -> str:
@@ -27,22 +43,93 @@ def _cache_key(url: str, params: dict) -> str:
     return hashlib.md5(raw.encode()).hexdigest()
 
 
+def _disk_path(key: str) -> str:
+    return os.path.join(_CACHE_DIR, key + '.json')
+
+
+def _disk_read(key: str) -> tuple[float, dict] | None:
+    try:
+        with open(_disk_path(key), 'r', encoding='utf-8') as f:
+            obj = json.load(f)
+        return float(obj['ts']), obj['data']
+    except Exception:
+        return None
+
+
+def _disk_write(key: str, ts: float, data: dict) -> None:
+    try:
+        tmp = _disk_path(key) + '.tmp'
+        with open(tmp, 'w', encoding='utf-8') as f:
+            json.dump({'ts': ts, 'data': data}, f)
+        os.replace(tmp, _disk_path(key))  # tulis atomik
+    except Exception:
+        pass
+
+
+def _throttle() -> None:
+    global _last_call_ts
+    wait = _MIN_INTERVAL - (time.time() - _last_call_ts)
+    if wait > 0:
+        time.sleep(wait)
+    _last_call_ts = time.time()
+
+
+def _http_get(url: str, params: dict, retries: int = 3) -> dict:
+    """GET dengan throttle + retry-backoff yang menghormati header Retry-After.
+    Melempar exception bila semua percobaan gagal."""
+    for attempt in range(retries):
+        _throttle()
+        try:
+            r = _session.get(url, params=params, timeout=30)
+            if r.status_code == 429 or r.status_code >= 500:
+                if attempt < retries - 1:
+                    ra = r.headers.get('Retry-After')
+                    delay = float(ra) if ra and ra.isdigit() else (2 ** attempt) * 1.5
+                    print(f"[data_fetcher] {r.status_code} dari {url}, "
+                          f"retry dalam {delay:.1f}s (percobaan {attempt+1}/{retries})")
+                    time.sleep(min(delay, 20))
+                    continue
+            r.raise_for_status()
+            return r.json()
+        except requests.RequestException:
+            if attempt < retries - 1:
+                time.sleep((2 ** attempt) * 1.5)
+                continue
+            raise
+    raise RuntimeError('unreachable')
+
+
 def _get_cached(url: str, params: dict, ttl: int = 900) -> dict | None:
     key = _cache_key(url, params)
+
+    # 1) memori masih segar
     if key in _cache:
         ts, data = _cache[key]
         if time.time() - ts < ttl:
             return data
+
+    # 2) disk masih segar (mengisi ulang memori setelah restart/bangun tidur)
+    disk = _disk_read(key)
+    if disk:
+        ts, data = disk
+        _cache[key] = (ts, data)
+        if time.time() - ts < ttl:
+            return data
+
+    # 3) ambil data baru (throttle + retry-backoff)
     try:
-        r = requests.get(url, params=params, timeout=30)
-        r.raise_for_status()
-        data = r.json()
-        _cache[key] = (time.time(), data)
+        data = _http_get(url, params)
+        now = time.time()
+        _cache[key] = (now, data)
+        _disk_write(key, now, data)
         return data
     except Exception as e:
         print(f"[data_fetcher] Error fetching {url}: {e}")
+        # 4) fallback: sajikan data lama (stale) dari memori/disk berapapun umurnya
         if key in _cache:
             return _cache[key][1]
+        if disk:
+            return disk[1]
         return None
 
 
